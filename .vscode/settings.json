@@ -2,9 +2,13 @@
     "files.exclude": {
         "**/.DS_Store": true,
         "**/.git": true,
+
+        "**/.gitmodules": true,
+
         "**/.vs": true,
         "**/.gitmodules": true,
         "**/.vsconfig": true,
+
         "**/*.booproj": true,
         "**/*.pidb": true,
         "**/*.suo": true,
@@ -49,13 +53,21 @@
         "library/": true,
         "obj/": true,
         "Obj/": true,
+ 
+        "ProjectSettings/": true,
+        "temp/": true,
+        "Temp/": true
+    },
+    "dotnet.defaultSolution": "CSC350-Final-Project.sln"
+
         "Logs/": true,
         "logs/": true,
-        "ProjectSettings/": true,
+        "ProjectSettings/: true,
         "UserSettings/": true,
         "temp/": true,
         "Temp/": true
     },
     "dotnet.defaultSolution": "Map.sln",
     "dotnet.preferCSharpExtension": true
+
 }
