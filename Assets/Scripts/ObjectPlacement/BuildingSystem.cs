@@ -91,6 +91,10 @@ public class BuildingSystem : MonoBehaviour
             scaleSlider.onValueChanged.AddListener(UpdateScale);
         }
 
+        if (Input.GetKeyDown(KeyCode.Space)) PlaceSelected();
+        if (Input.GetKeyDown(KeyCode.Z)) RotateSelected();
+        if (Input.GetKeyDown(KeyCode.Escape)) DestroySelected();
+
         if (!objectToPlace)
         {
             return;

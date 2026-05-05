@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using System.Runtime.InteropServices;
 
 public class FirebaseHandler : MonoBehaviour
 {
@@ -38,7 +39,10 @@ public class FirebaseHandler : MonoBehaviour
     {
         List<GameObjectData> objectData = new List<GameObjectData>();
         foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Selectable"))
-            objectData.Add(new GameObjectData(obj));
+        {
+            GameObjectData data = new(obj);
+            if (data.IsValid) objectData.Add(data);
+        }
 
         string json = Serialize(objectData.ToArray(), mapName);
         File.WriteAllText(GetSlotPath(slot), json);
@@ -100,13 +104,52 @@ public class FirebaseHandler : MonoBehaviour
         {
             string json = File.ReadAllText(path);
             Environment env = Deserialize(json);
-            onResult?.Invoke(env.Name);
+            string display = string.IsNullOrEmpty(env.SavedAt)
+                ? env.Name
+                : env.Name + "\n" + env.SavedAt;
+            onResult?.Invoke(display);
         }
         catch
         {
             onResult?.Invoke(null);
         }
     }
+
+    #if UNITY_WEBGL && !UNITY_EDITOR
+        [DllImport("__Internal")]
+        private static extern void DownloadTextFile(string filename, string content);
+    #endif
+
+    public string DownloadMap(int slot)
+    {
+        string path = GetSlotPath(slot);
+        if (!File.Exists(path))
+        {
+            Debug.LogWarning("No save found at slot " + slot);
+            return "No map saved in slot " + slot;
+        }
+
+        string json     = File.ReadAllText(path);
+        string filename = UserSession.Username + "-SLOT" + slot + ".json";
+
+    #if UNITY_WEBGL && !UNITY_EDITOR
+            DownloadTextFile(filename, json);
+            return "Map downloaded";
+    #elif UNITY_IOS && !UNITY_EDITOR
+            GUIUtility.systemCopyBuffer = json;
+            Debug.Log("Map JSON copied to clipboard");
+            return "Map copied to clipboard";
+    #else
+        string dest = Path.Combine(
+            System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop),
+            filename
+        );
+        File.WriteAllText(dest, json);
+        Debug.Log("Map saved to Desktop: " + dest);
+        return "Map saved to Desktop";
+    #endif
+    }
+
 }
 
 [Serializable]
@@ -118,21 +161,22 @@ public class GameObjectData
     public Quaternion rotation;
     public Vector3 scale;
 
+    public bool IsValid => !string.IsNullOrEmpty(prefabName);
+
     public GameObjectData(GameObject gameObject)
     {
         PlaceableObject obj = gameObject.GetComponent<PlaceableObject>();
-        if (obj != null)
-        {
-            name = gameObject.name;
-            prefabName = obj.prefabName;
-            position = gameObject.transform.position;
-            rotation = gameObject.transform.rotation;
-            scale = gameObject.transform.localScale;
-        }
-        else
+        if (obj == null)
         {
             Debug.LogWarning("No PlaceableObject on: " + gameObject.name);
+            return;
         }
+
+        name = gameObject.name;
+        prefabName = obj.prefabName;
+        position = gameObject.transform.position;
+        rotation = gameObject.transform.rotation;
+        scale = gameObject.transform.localScale;
     }
 }
 
@@ -140,12 +184,14 @@ public class GameObjectData
 public class Environment
 {
     public string Name;
+    public string SavedAt;
     public int ObjectCount;
     public GameObjectData[] Items;
 
     public Environment(GameObjectData[] items, string mapName = "Untitled")
     {
         Name = string.IsNullOrWhiteSpace(mapName) ? "Untitled" : mapName;
+        SavedAt = DateTime.Now.ToString("MM/dd/yyyy HH:mm");
         Items = items;
         ObjectCount = BuildingSystem.ObjectCount;
     }
