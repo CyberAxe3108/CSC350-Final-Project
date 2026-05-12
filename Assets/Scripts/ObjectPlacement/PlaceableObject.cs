@@ -131,11 +131,7 @@ public class PlaceableObject : MonoBehaviour
         Destroy(drag);
 
         Placed = true;
-
-        gameObject.tag = "PlaceableObject";
-
         gameObject.tag = "Selectable";
-
 
         // Clear the selected object if this object is selected
         if (BuildingSystem.current.Selected == gameObject)
@@ -361,4 +357,6 @@ public class PlaceableObject : MonoBehaviour
     //     return overlappingObjects;
     // }
 }
+
+
 
