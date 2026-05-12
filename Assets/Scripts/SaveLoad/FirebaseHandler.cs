@@ -6,7 +6,7 @@ using UnityEngine;
 public class FirebaseHandler : MonoBehaviour
 {
     private static string GetSlotPath(int slot) =>
-        Path.Combine(Application.persistentDataPath, UserSession.Username + "-SLOT" + slot + ".json");
+        Path.Combine(Application.persistentDataPath, PlayerPrefs.GetString("Username", "Player") + "-SLOT" + slot + ".json");
 
     private static GameObject LoadPrefab(string prefabName)
     {
