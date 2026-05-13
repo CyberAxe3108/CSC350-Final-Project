@@ -6,6 +6,8 @@ using System.Runtime.InteropServices;
 
 public class FirebaseHandler : MonoBehaviour
 {
+    public string CurrentMapName { get; private set; } = "";
+
     private static string GetSlotPath(int slot) =>
         Path.Combine(Application.persistentDataPath, UserSession.Username + "-SLOT" + slot + ".json");
 
@@ -25,6 +27,7 @@ public class FirebaseHandler : MonoBehaviour
         foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Selectable"))
             Destroy(obj);
         BuildingSystem.ObjectCount = 0;
+        CurrentMapName = "";
     }
 
     private string Serialize(GameObjectData[] items, string mapName) =>
@@ -46,6 +49,7 @@ public class FirebaseHandler : MonoBehaviour
 
         string json = Serialize(objectData.ToArray(), mapName);
         File.WriteAllText(GetSlotPath(slot), json);
+        CurrentMapName = mapName;
         Debug.Log("Saved to: " + GetSlotPath(slot));
     }
 
@@ -64,6 +68,7 @@ public class FirebaseHandler : MonoBehaviour
 
         string json = File.ReadAllText(path);
         Environment env = Deserialize(json);
+        CurrentMapName = env.Name;
 
         foreach (GameObjectData data in env.Items)
         {
@@ -104,9 +109,14 @@ public class FirebaseHandler : MonoBehaviour
         {
             string json = File.ReadAllText(path);
             Environment env = Deserialize(json);
-            string display = string.IsNullOrEmpty(env.SavedAt)
-                ? env.Name
-                : env.Name + "\n" + env.SavedAt;
+
+            int count = env.Items != null ? env.Items.Length : env.ObjectCount;
+            string countLine = count + (count == 1 ? " object" : " objects");
+
+            string display = env.Name;
+            if (!string.IsNullOrEmpty(env.SavedAt)) display += "\n" + env.SavedAt;
+            display += "\n" + countLine;
+
             onResult?.Invoke(display);
         }
         catch

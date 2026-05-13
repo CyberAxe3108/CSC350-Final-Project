@@ -55,6 +55,15 @@ public class BuildingSystem : MonoBehaviour
         current = this;
         grid = gridLayout.gameObject.GetComponent<Grid>();
     }
+    
+    public void ClearObjectToPlace()
+    {
+        objectToPlace = null;
+        Selected = null;
+        unhighlightButtons();
+    }
+
+
 
     private void Start()
     {
@@ -173,8 +182,14 @@ public class BuildingSystem : MonoBehaviour
     {
         if (Selected)
         {
+            if(objectToPlace != null && objectToPlace.Placed)
+            {
+                Vector3Int start = gridLayout.WorldToCell(objectToPlace.GetStartPosition());
+                UnfillArea(start, objectToPlace.Size);
+            }
             Destroy(objectToPlace.gameObject);
             Selected = null;
+            objectToPlace = null;
             unhighlightButtons();
         }
     }

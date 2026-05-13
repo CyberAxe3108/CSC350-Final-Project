@@ -1,7 +1,5 @@
 using UnityEngine;
-#if UNITY_IOS
 using UnityEngine.XR.ARFoundation;
-#endif
 
 public class ArSetting : MonoBehaviour
 {

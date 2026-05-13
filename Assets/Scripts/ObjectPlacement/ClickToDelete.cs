@@ -20,11 +20,16 @@ public class ClickToDelete : MonoBehaviour
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit))
             {
-                if (Input.GetMouseButtonDown(0))
-                {
+                
                     GameObject objectToDelete = hit.collider.gameObject;
                     if (deleteTool.activeSelf && objectToDelete.tag == "Selectable")
-                        Destroy(objectToDelete);
+                {
+                    if(BuildingSystem.current.Selected == objectToDelete)
+                    {
+                        BuildingSystem.current.Selected = null;
+                    }
+                    Destroy(objectToDelete);
+                    BuildingSystem.current.ClearObjectToPlace();
                 }
             }
         }

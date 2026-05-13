@@ -8,8 +8,10 @@ public class SaveLoadUI : MonoBehaviour {
     // Assign one label per load button in the Inspector (slots 1–4)
     [SerializeField] TextMeshProUGUI[] loadButtonLabels;
     [SerializeField] TextMeshProUGUI feedbackText;
+    [SerializeField] TMP_InputField mapNameInput;
 
     private int selectedSlot = 0;
+    private int lastUsedSlot = 0;
 
     public void SetVisibility(bool state) {
         saveLoadPanel.SetActive(state);
@@ -23,12 +25,22 @@ public class SaveLoadUI : MonoBehaviour {
     }
 
     public void Save(int slot) {
-        firebaseHandler.SaveEnvironment(slot, "Slot " + slot);
+        string mapName = mapNameInput != null ? mapNameInput.text?.Trim() : "";
+        if (string.IsNullOrEmpty(mapName)) mapName = "Slot " + slot;
+
+        firebaseHandler.SaveEnvironment(slot, mapName);
+        lastUsedSlot = slot;
+
+        if (mapNameInput != null) mapNameInput.text = "";
+        RefreshSlotNames();
     }
 
     public void SelectSlot(int slot) => selectedSlot = slot;
 
-    public void Load(int slot) => firebaseHandler.LoadEnvironment(slot);
+    public void Load(int slot) {
+        firebaseHandler.LoadEnvironment(slot);
+        lastUsedSlot = slot;
+    }
 
     public void DownloadSelected()
     {
@@ -39,6 +51,17 @@ public class SaveLoadUI : MonoBehaviour {
             return;
         }
         Download(selectedSlot);
+    }
+
+    public void DownloadLastUsed()
+    {
+        if (lastUsedSlot == 0)
+        {
+            if (feedbackText != null)
+                StartCoroutine(ShowFeedback("No map saved or loaded yet"));
+            return;
+        }
+        Download(lastUsedSlot);
     }
 
     public void Download(int slot)

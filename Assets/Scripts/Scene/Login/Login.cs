@@ -21,7 +21,8 @@ public class Login : MonoBehaviour
 
     void login()
     {
-        UserSession.SetUsername(usernameInput.text);
+        Debug.Log("username: "+usernameInput.text);
+        //fireBaseManager.setUserName(usernameInput.text);
         SceneManager.LoadScene("MainMenu");
     }
 }
